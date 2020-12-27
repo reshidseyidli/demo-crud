@@ -2,6 +2,7 @@ package com.example.demo.controller;
 
 import com.example.demo.model.MyEntity;
 import com.example.demo.service.MyEntityService;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -9,14 +10,11 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
+@RequiredArgsConstructor
 @RequestMapping("/api/v1/myEntity")
 public class MyEntityController {
 
     private final MyEntityService service;
-
-    public MyEntityController(MyEntityService service) {
-        this.service = service;
-    }
 
     @GetMapping("/myEntity/all")
     public ResponseEntity<List<MyEntity>> getAll() {

@@ -1,8 +1,11 @@
 package com.example.demo.service.impl;
 
+import com.example.demo.exception.MyEntityNotFound;
 import com.example.demo.model.MyEntity;
 import com.example.demo.repository.MyEntityRepository;
 import com.example.demo.service.MyEntityService;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -10,39 +13,35 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.Optional;
 
+@Slf4j
 @Service
+@RequiredArgsConstructor
 public class MyEntityServiceImpl implements MyEntityService {
-
-    private static final Logger logger = LoggerFactory.getLogger(MyEntityServiceImpl.class);
 
     private final MyEntityRepository repository;
 
-    public MyEntityServiceImpl(MyEntityRepository repository) {
-        this.repository = repository;
-    }
-
     @Override
     public List<MyEntity> findAll() {
-        logger.info("getting all...");
+        log.info("getting all...");
         return repository.findAll();
     }
 
     @Override
     public MyEntity findById(Long id) {
-        logger.info("getting by id...");
+        log.info("getting by id...");
         Optional<MyEntity> entity = repository.findById(id);
-        return entity.orElse(null);
+        return entity.orElseThrow(MyEntityNotFound::new);
     }
 
     @Override
     public MyEntity save(MyEntity requestEntity) {
-        logger.info("saving...");
+        log.info("saving...");
         return repository.save(requestEntity);
     }
 
     @Override
     public void update(Long id, MyEntity requestEntity) {
-        logger.info("updating...");
+        log.info("updating...");
         Optional<MyEntity> dbEntity = repository.findById(id);
         if (dbEntity.isPresent()) {
             MyEntity entity = dbEntity.get();
@@ -55,7 +54,7 @@ public class MyEntityServiceImpl implements MyEntityService {
 
     @Override
     public void delete(Long id) {
-        logger.info("deleting...");
+        log.info("deleting...");
         Optional<MyEntity> entity = repository.findById(id);
         entity.ifPresent(repository::delete);
     }
