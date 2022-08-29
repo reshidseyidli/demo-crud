@@ -5,6 +5,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
+import java.math.BigDecimal;
 import java.time.LocalDate;
 
 @Entity
@@ -18,8 +19,7 @@ public class MyEntity {
     @GeneratedValue(strategy = GenerationType.SEQUENCE)
     private Long id;
     private String valyuta;
-    private String mezenne;
-
-    @Column(name = "tarix")
+    private String code;
+    private BigDecimal mezenne;
     private LocalDate tarix;
 }

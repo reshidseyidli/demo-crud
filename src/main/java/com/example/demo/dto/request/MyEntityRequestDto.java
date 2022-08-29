@@ -2,12 +2,13 @@ package com.example.demo.dto.request;
 
 import lombok.Data;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 
 @Data
 public class MyEntityRequestDto {
 
-    private String mezenne;
+    private String valyuta;
     private LocalDate tarix;
-    private double deyer;
+    private BigDecimal mebleg;
 }

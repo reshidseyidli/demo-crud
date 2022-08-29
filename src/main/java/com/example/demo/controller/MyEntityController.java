@@ -1,10 +1,11 @@
 package com.example.demo.controller;
 
+import com.example.demo.dto.request.MyEntityRequestDto;
+import com.example.demo.dto.response.MyEntityResponseDto;
 import com.example.demo.model.MyEntity;
 import com.example.demo.service.MyEntityService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -48,8 +49,8 @@ public class MyEntityController {
     }
 
     @PostMapping(value = "/valyuta")
-    public ResponseEntity<MyEntity> getValyuta(@RequestBody MyEntity myEntity) {
-        myEntity = service.getValyuta(myEntity);
-        return new ResponseEntity<>(myEntity, HttpStatus.CREATED);
+    public ResponseEntity<MyEntityResponseDto> getValyuta(@RequestBody MyEntityRequestDto request) {
+        MyEntityResponseDto response = service.getValyuta(request);
+        return new ResponseEntity<>(response, HttpStatus.OK);
     }
 }

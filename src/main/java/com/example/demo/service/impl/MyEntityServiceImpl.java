@@ -1,5 +1,7 @@
 package com.example.demo.service.impl;
 
+import com.example.demo.dto.request.MyEntityRequestDto;
+import com.example.demo.dto.response.MyEntityResponseDto;
 import com.example.demo.exception.MyEntityNotFound;
 import com.example.demo.model.MyEntity;
 import com.example.demo.model.pojo.ValCurs;
@@ -17,6 +19,7 @@ import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Unmarshaller;
 import java.io.StringReader;
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.Collections;
 import java.util.List;
@@ -70,22 +73,27 @@ public class MyEntityServiceImpl implements MyEntityService {
     }
 
     @Override
-    public MyEntity getValyuta(MyEntity myEntity) {
-        MyEntity entity = repository.findByTarix(myEntity.getTarix());
-
+    public MyEntityResponseDto getValyuta(MyEntityRequestDto request) {
+        MyEntityResponseDto responseDto = new MyEntityResponseDto();
+        MyEntity entity = repository.findByTarixAndValyuta(request.getTarix(), request.getValyuta());
         if (entity == null) {
-            try {
-                entity = getMezenneFromCbarApi();
-            } catch (JAXBException e) {
-                e.printStackTrace();
-                throw new RuntimeException(e);
-            }
+            //write to DB
+            getMezenneFromCbarApiFillDB();
+            System.out.println("data not found in database");
         }
 
-        return entity;
+        entity = repository.findByTarixAndValyuta(request.getTarix(), request.getValyuta());
+        if (entity == null) {
+            System.out.println("data not found in CBAR api");
+        } else {
+            responseDto = new MyEntityResponseDto();
+            BigDecimal deyer = request.getMebleg().multiply(entity.getMezenne());
+            responseDto.setResult(deyer);
+        }
+        return responseDto;
     }
 
-    private MyEntity getMezenneFromCbarApi() throws JAXBException {
+    private void getMezenneFromCbarApiFillDB() {
         RestTemplate restTemplate = new RestTemplate();
         HttpHeaders headers = new HttpHeaders();
         headers.setAccept(Collections.singletonList(MediaType.APPLICATION_XML));
@@ -114,19 +122,30 @@ public class MyEntityServiceImpl implements MyEntityService {
         if (status != HttpStatus.OK) {
             System.out.println("err" + "Received an invalid response: " + status);
         } else {
-            JAXBContext jaxbContext = JAXBContext.newInstance(ValCurs.class);
-            Unmarshaller jaxbUnmarshaller = jaxbContext.createUnmarshaller();
-            ValCurs valCurs = (ValCurs) jaxbUnmarshaller.unmarshal(new StringReader(response.getBody()));
+            JAXBContext jaxbContext;
+            ValCurs valCurs;
+
+            try {
+                jaxbContext = JAXBContext.newInstance(ValCurs.class);
+                Unmarshaller jaxbUnmarshaller = jaxbContext.createUnmarshaller();
+                valCurs = (ValCurs) jaxbUnmarshaller.unmarshal(new StringReader(response.getBody()));
+            } catch (JAXBException e) {
+                throw new RuntimeException(e);
+            }
 
             List<ValType> listValType = valCurs.getListValType();
             ValType valType = listValType.get(1);
             List<Valute> listValute = valType.getListValute();
 
             for (Valute valute : listValute) {
-                System.out.println("valute : " + valute.getName());
+                System.out.println("code : " + valute.getCode());
+                MyEntity myEntity = new MyEntity();
+                myEntity.setValyuta(valute.getName());
+                myEntity.setCode(valute.getCode());
+                myEntity.setMezenne(valute.getValue());
+                myEntity.setTarix(LocalDate.now());
+                repository.save(myEntity);
             }
         }
-
-        return null;
     }
 }
