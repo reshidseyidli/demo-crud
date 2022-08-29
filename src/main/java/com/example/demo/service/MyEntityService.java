@@ -15,4 +15,6 @@ public interface MyEntityService {
     void update(Long id, MyEntity requestEntity);
 
     void delete(Long id);
+
+    MyEntity getValyuta(MyEntity myEntity);
 }

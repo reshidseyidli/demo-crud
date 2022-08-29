@@ -1,12 +1,10 @@
 package com.example.demo.controller;
 
-import com.example.demo.dto.request.MyEntityRequestDto;
-import com.example.demo.dto.response.MyEntityResponseDto;
 import com.example.demo.model.MyEntity;
 import com.example.demo.service.MyEntityService;
-import com.example.demo.util.MyEntityMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -18,40 +16,40 @@ import java.util.List;
 public class MyEntityController {
 
     private final MyEntityService service;
-    private static final MyEntityMapper MAPPER = MyEntityMapper.INSTANCE;
 
-    @GetMapping("/myEntity/all")
-    public ResponseEntity<List<MyEntityResponseDto>> getAll() {
+    @GetMapping()
+    public ResponseEntity<List<MyEntity>> getAll() {
         List<MyEntity> entityList = service.findAll();
-        List<MyEntityResponseDto> myEntityResponseDtoList = MAPPER.toMyEntityResponseDtoList(entityList);
-        return new ResponseEntity<>(myEntityResponseDtoList, HttpStatus.OK);
+        return new ResponseEntity<>(entityList, HttpStatus.OK);
     }
 
-    @GetMapping("/myEntity/{id}")
-    public ResponseEntity<MyEntityResponseDto> getById(@PathVariable Long id) {
+    @GetMapping("/{id}")
+    public ResponseEntity<MyEntity> getById(@PathVariable Long id) {
         MyEntity entity = service.findById(id);
-        MyEntityResponseDto entityResponseDto = MAPPER.toMyEntityResponseDto(entity);
-        return new ResponseEntity<>(entityResponseDto, HttpStatus.OK);
+        return new ResponseEntity<>(entity, HttpStatus.OK);
     }
 
-    @PostMapping("/myEntity")
-    public ResponseEntity<MyEntityResponseDto> save(@RequestBody MyEntityRequestDto myEntityRequestDto) {
-        MyEntity entity = MAPPER.toMyEntity(myEntityRequestDto);
-        entity = service.save(entity);
-        MyEntityResponseDto entityResponseDto = MAPPER.toMyEntityResponseDto(entity);
-        return new ResponseEntity<>(entityResponseDto, HttpStatus.CREATED);
+    @PostMapping()
+    public ResponseEntity<MyEntity> save(@RequestBody MyEntity myEntity) {
+        myEntity = service.save(myEntity);
+        return new ResponseEntity<>(myEntity, HttpStatus.CREATED);
     }
 
-    @PutMapping("/myEntity")
-    public ResponseEntity<Void> update(@PathVariable Long id, @RequestBody MyEntityRequestDto myEntityRequestDto) {
-        MyEntity entity = MAPPER.toMyEntity(myEntityRequestDto);
-        service.update(id, entity);
+    @PutMapping("/{id}")
+    public ResponseEntity<Void> update(@PathVariable Long id, @RequestBody MyEntity myEntity) {
+        service.update(id, myEntity);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
-    @DeleteMapping("/myEntity")
+    @DeleteMapping("/{id}")
     public ResponseEntity<Void> delete(@PathVariable Long id) {
         service.delete(id);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+    }
+
+    @PostMapping(value = "/valyuta")
+    public ResponseEntity<MyEntity> getValyuta(@RequestBody MyEntity myEntity) {
+        myEntity = service.getValyuta(myEntity);
+        return new ResponseEntity<>(myEntity, HttpStatus.CREATED);
     }
 }
