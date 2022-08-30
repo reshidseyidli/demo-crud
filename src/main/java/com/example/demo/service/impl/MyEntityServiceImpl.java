@@ -58,9 +58,9 @@ public class MyEntityServiceImpl implements MyEntityService {
         if (dbEntity.isPresent()) {
             MyEntity entity = dbEntity.get();
             entity.setId(requestEntity.getId());
-            entity.setValyuta(requestEntity.getValyuta());
-            entity.setMezenne(requestEntity.getMezenne());
-            entity.setTarix(requestEntity.getTarix());
+            entity.setCurrency(requestEntity.getCurrency());
+            entity.setRate(requestEntity.getRate());
+            entity.setDate(requestEntity.getDate());
             repository.save(requestEntity);
         }
     }
@@ -75,19 +75,19 @@ public class MyEntityServiceImpl implements MyEntityService {
     @Override
     public MyEntityResponseDto getValyuta(MyEntityRequestDto request) {
         MyEntityResponseDto responseDto = new MyEntityResponseDto();
-        MyEntity entity = repository.findByTarixAndValyuta(request.getTarix(), request.getValyuta());
+        MyEntity entity = repository.findByDateAndCode(request.getDate(), request.getCurrency());
         if (entity == null) {
             //write to DB
             getMezenneFromCbarApiFillDB();
             System.out.println("data not found in database");
         }
 
-        entity = repository.findByTarixAndValyuta(request.getTarix(), request.getValyuta());
+        entity = repository.findByDateAndCode(request.getDate(), request.getCurrency());
         if (entity == null) {
             System.out.println("data not found in CBAR api");
         } else {
             responseDto = new MyEntityResponseDto();
-            BigDecimal deyer = request.getMebleg().multiply(entity.getMezenne());
+            BigDecimal deyer = request.getConversationAmount().multiply(entity.getRate());
             responseDto.setResult(deyer);
         }
         return responseDto;
@@ -133,6 +133,8 @@ public class MyEntityServiceImpl implements MyEntityService {
                 throw new RuntimeException(e);
             }
 
+            System.out.println("dateeee" + valCurs.getDate());
+
             List<ValType> listValType = valCurs.getListValType();
             ValType valType = listValType.get(1);
             List<Valute> listValute = valType.getListValute();
@@ -140,10 +142,10 @@ public class MyEntityServiceImpl implements MyEntityService {
             for (Valute valute : listValute) {
                 System.out.println("code : " + valute.getCode());
                 MyEntity myEntity = new MyEntity();
-                myEntity.setValyuta(valute.getName());
+                myEntity.setCurrency(valute.getName());
                 myEntity.setCode(valute.getCode());
-                myEntity.setMezenne(valute.getValue());
-                myEntity.setTarix(LocalDate.now());
+                myEntity.setRate(valute.getValue());
+                myEntity.setDate(LocalDate.now());
                 repository.save(myEntity);
             }
         }

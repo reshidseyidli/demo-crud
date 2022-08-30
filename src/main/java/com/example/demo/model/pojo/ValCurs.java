@@ -5,6 +5,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlElementWrapper;
 import lombok.ToString;
 
+import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import java.util.List;
@@ -18,7 +19,6 @@ public class ValCurs {
 
     private List<ValType> listValType;
 
-
     @XmlElement(name = "ValType")
     public List<ValType> getListValType() {
         return listValType;
@@ -26,5 +26,16 @@ public class ValCurs {
 
     public void setListValType(List<ValType> listValType) {
         this.listValType = listValType;
+    }
+
+    private String date;
+
+    @XmlAttribute(name = "Date")
+    public String getDate() {
+        return date;
+    }
+
+    public void setDate(String date) {
+        this.date = date;
     }
 }

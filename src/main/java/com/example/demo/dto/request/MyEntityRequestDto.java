@@ -8,7 +8,7 @@ import java.time.LocalDate;
 @Data
 public class MyEntityRequestDto {
 
-    private String valyuta;
-    private LocalDate tarix;
-    private BigDecimal mebleg;
+    private String currency;
+    private LocalDate date;
+    private BigDecimal conversationAmount;
 }

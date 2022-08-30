@@ -18,8 +18,8 @@ public class MyEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE)
     private Long id;
-    private String valyuta;
+    private String currency;
     private String code;
-    private BigDecimal mezenne;
-    private LocalDate tarix;
+    private BigDecimal rate;
+    private LocalDate date;
 }

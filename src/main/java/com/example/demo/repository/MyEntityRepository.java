@@ -9,5 +9,5 @@ import java.time.LocalDate;
 @Repository
 public interface MyEntityRepository extends JpaRepository<MyEntity, Long> {
 
-    MyEntity findByTarixAndValyuta(LocalDate tarix, String valyuta);
+    MyEntity findByDateAndCode(LocalDate date, String code);
 }
