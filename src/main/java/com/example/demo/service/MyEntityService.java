@@ -4,6 +4,7 @@ import com.example.demo.dto.request.MyEntityRequestDto;
 import com.example.demo.dto.response.MyEntityResponseDto;
 import com.example.demo.model.MyEntity;
 
+import java.io.IOException;
 import java.util.List;
 
 public interface MyEntityService {
@@ -18,5 +19,5 @@ public interface MyEntityService {
 
     void delete(Long id);
 
-    MyEntityResponseDto getValyuta(MyEntityRequestDto request);
+    MyEntityResponseDto getValyuta(MyEntityRequestDto request) throws IOException;
 }

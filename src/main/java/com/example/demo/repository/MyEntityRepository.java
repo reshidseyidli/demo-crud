@@ -4,10 +4,8 @@ import com.example.demo.model.MyEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
-import java.time.LocalDate;
-
 @Repository
 public interface MyEntityRepository extends JpaRepository<MyEntity, Long> {
 
-    MyEntity findByDateAndCode(LocalDate date, String code);
+    MyEntity findByDateAndCode(String date, String code);
 }

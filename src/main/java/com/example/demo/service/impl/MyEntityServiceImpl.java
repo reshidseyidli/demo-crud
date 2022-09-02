@@ -12,15 +12,18 @@ import com.example.demo.service.MyEntityService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.*;
+import org.springframework.http.client.SimpleClientHttpRequestFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Unmarshaller;
-import java.io.StringReader;
+import java.io.*;
 import java.math.BigDecimal;
-import java.time.LocalDate;
+import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
@@ -73,16 +76,17 @@ public class MyEntityServiceImpl implements MyEntityService {
     }
 
     @Override
-    public MyEntityResponseDto getValyuta(MyEntityRequestDto request) {
+    public MyEntityResponseDto getValyuta(MyEntityRequestDto request) throws IOException {
         MyEntityResponseDto responseDto = new MyEntityResponseDto();
-        MyEntity entity = repository.findByDateAndCode(request.getDate(), request.getCurrency());
+        MyEntity entity = repository.findByDateAndCode(request.getDate(), request.getCode());
         if (entity == null) {
             //write to DB
-            getMezenneFromCbarApiFillDB();
             System.out.println("data not found in database");
+            getMezenneFromCbarApiFillDB(request.getDate());
         }
-
-        entity = repository.findByDateAndCode(request.getDate(), request.getCurrency());
+        System.out.println("req date : " + request.getDate());
+        System.out.println("req code : " + request.getCode());
+        entity = repository.findByDateAndCode(request.getDate(), request.getCode());
         if (entity == null) {
             System.out.println("data not found in CBAR api");
         } else {
@@ -93,33 +97,43 @@ public class MyEntityServiceImpl implements MyEntityService {
         return responseDto;
     }
 
-    private void getMezenneFromCbarApiFillDB() {
-        RestTemplate restTemplate = new RestTemplate();
-        HttpHeaders headers = new HttpHeaders();
-        headers.setAccept(Collections.singletonList(MediaType.APPLICATION_XML));
-        HttpEntity<String> entity = new HttpEntity<>("body", headers);
+    private void getMezenneFromCbarApiFillDB(String requestDate) throws IOException {
+        //DATE FORMAT ==> DD.MM.YYYY
+        String[] arrDate = requestDate.split("\\.");
+        String day = arrDate[0];
+        String month = arrDate[1];
+        String year = arrDate[2];
 
-        LocalDate currDate = LocalDate.now();
-        int year = currDate.getYear();
-        int month = currDate.getMonthValue();
+        String urlText = "https://www.cbar.az/currencies/" + day + "." + month + "." + year + ".xml";
+        URL url = new URL(urlText);
 
-        String strMonth = String.valueOf(month);
-        if (strMonth.length() == 1) {
-            strMonth = "0" + strMonth;
+        HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+        connection.setRequestMethod("GET");
+        connection.setRequestProperty("Content-Type", "application/xml");
+        connection.setDoOutput(true);
+        connection.setDoInput(true);
+        connection.setUseCaches (false);
+        connection.setInstanceFollowRedirects(false);
+        connection.setConnectTimeout(15000);
+        connection.setReadTimeout(15000);
+
+        // Process response - need to get XML response back.
+        InputStream stream = connection.getInputStream();
+        InputStreamReader isReader = new InputStreamReader(stream );
+
+        // Put output stream into a String
+        BufferedReader br = new BufferedReader(isReader);
+        StringBuilder reqBody = new StringBuilder();
+        String line;
+        while ((line = br.readLine()) != null) {
+            reqBody.append(line);
         }
+        br.close();
 
-        int day = currDate.getDayOfMonth();
-        String strDay = String.valueOf(day);
-        if (strDay.length() == 1) {
-            strDay = "0" + strDay;
-        }
+        connection.disconnect();
 
-        String url = "https://www.cbar.az/currencies/" + strDay + "." + strMonth + "." + year + ".xml";
-
-        ResponseEntity<String> response = restTemplate.exchange(url, HttpMethod.GET, entity, String.class);
-
-        HttpStatus status = response.getStatusCode();
-        if (status != HttpStatus.OK) {
+        int status = connection.getResponseCode();
+        if (status != 200) {
             System.out.println("err" + "Received an invalid response: " + status);
         } else {
             JAXBContext jaxbContext;
@@ -128,24 +142,22 @@ public class MyEntityServiceImpl implements MyEntityService {
             try {
                 jaxbContext = JAXBContext.newInstance(ValCurs.class);
                 Unmarshaller jaxbUnmarshaller = jaxbContext.createUnmarshaller();
-                valCurs = (ValCurs) jaxbUnmarshaller.unmarshal(new StringReader(response.getBody()));
+                valCurs = (ValCurs) jaxbUnmarshaller.unmarshal(new StringReader(reqBody.toString()));
             } catch (JAXBException e) {
                 throw new RuntimeException(e);
             }
-
-            System.out.println("dateeee" + valCurs.getDate());
 
             List<ValType> listValType = valCurs.getListValType();
             ValType valType = listValType.get(1);
             List<Valute> listValute = valType.getListValute();
 
             for (Valute valute : listValute) {
-                System.out.println("code : " + valute.getCode());
+                System.out.println(valute);
                 MyEntity myEntity = new MyEntity();
-                myEntity.setCurrency(valute.getName());
+                myEntity.setCurrency(Integer.valueOf(valute.getName()));
                 myEntity.setCode(valute.getCode());
                 myEntity.setRate(valute.getValue());
-                myEntity.setDate(LocalDate.now());
+                myEntity.setDate(valCurs.getDate());
                 repository.save(myEntity);
             }
         }

@@ -9,6 +9,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.io.IOException;
 import java.util.List;
 
 @RestController
@@ -49,7 +50,7 @@ public class MyEntityController {
     }
 
     @PostMapping(value = "/valyuta")
-    public ResponseEntity<MyEntityResponseDto> getValyuta(@RequestBody MyEntityRequestDto request) {
+    public ResponseEntity<MyEntityResponseDto> getValyuta(@RequestBody MyEntityRequestDto request) throws IOException {
         MyEntityResponseDto response = service.getValyuta(request);
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
