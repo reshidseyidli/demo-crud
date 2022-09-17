@@ -13,7 +13,7 @@ public interface MyEntityService {
 
     MyEntity findById(Long id);
 
-    MyEntity save(MyEntity requestEntity);
+    void save(MyEntityRequestDto requestEntity);
 
     void update(Long id, MyEntity requestEntity);
 

@@ -32,9 +32,9 @@ public class MyEntityController {
     }
 
     @PostMapping()
-    public ResponseEntity<MyEntity> save(@RequestBody MyEntity myEntity) {
-        myEntity = service.save(myEntity);
-        return new ResponseEntity<>(myEntity, HttpStatus.CREATED);
+    public ResponseEntity<MyEntity> save(@RequestBody MyEntityRequestDto myEntityRequestDto) {
+        service.save(myEntityRequestDto);
+        return new ResponseEntity<>(HttpStatus.CREATED);
     }
 
     @PutMapping("/{id}")

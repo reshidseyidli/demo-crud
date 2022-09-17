@@ -49,9 +49,14 @@ public class MyEntityServiceImpl implements MyEntityService {
     }
 
     @Override
-    public MyEntity save(MyEntity requestEntity) {
+    public void save(MyEntityRequestDto requestEntity) {
         log.info("saving...");
-        return repository.save(requestEntity);
+        MyEntity myEntity = new MyEntity();
+        myEntity.setCurrency(requestEntity.getCurrency());
+        myEntity.setCode(requestEntity.getCode());
+        myEntity.setRate(requestEntity.getRate());
+        myEntity.setDate(requestEntity.getDate());
+        repository.save(myEntity);
     }
 
     @Override
